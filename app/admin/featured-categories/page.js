@@ -17,18 +17,28 @@ export default function FeaturedCategoriesPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
   const [catSaved, setCatSaved] = useState(false);
+  const [saveError, setSaveError] = useState(null);
   const [uploading, setUploading] = useState({});
   const [uploadStatus, setUploadStatus] = useState({});
-  const fileRefs = useRef({});
+  const [loadingCats, setLoadingCats] = useState(true);
+  const fileRefs = useRef({});;
 
+  // Load from DB on mount
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('featured_categories');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) setCategories(parsed);
+    async function load() {
+      try {
+        const res = await fetch('/api/featured-categories');
+        const data = await res.json();
+        if (Array.isArray(data.categories) && data.categories.length > 0) {
+          setCategories(data.categories);
+        }
+      } catch {
+        // silently fall back to defaults
+      } finally {
+        setLoadingCats(false);
       }
-    } catch {}
+    }
+    load();
   }, []);
 
   const addCategory = () => {
@@ -64,11 +74,22 @@ export default function FeaturedCategoriesPage() {
     }
   };
 
-  const saveCategories = () => {
+  const saveCategories = async () => {
     const valid = categories.filter((c) => c.name.trim() && c.image);
-    localStorage.setItem('featured_categories', JSON.stringify(valid));
-    setCatSaved(true);
-    setTimeout(() => setCatSaved(false), 3000);
+    setSaveError(null);
+    try {
+      const res = await fetch('/api/featured-categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ categories: valid }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Save failed');
+      setCatSaved(true);
+      setTimeout(() => setCatSaved(false), 3000);
+    } catch (err) {
+      setSaveError(err.message);
+    }
   };
 
   return (
@@ -123,7 +144,7 @@ export default function FeaturedCategoriesPage() {
               </CardHeader>
 
               <CardContent className="space-y-6">
-                {/* Success message */}
+                {/* Success / error messages */}
                 <AnimatePresence>
                   {catSaved && (
                     <motion.div
@@ -133,7 +154,18 @@ export default function FeaturedCategoriesPage() {
                       className="p-3 bg-green-50 border border-green-200 rounded text-green-600 text-sm flex items-center gap-2"
                     >
                       <CheckCircle size={14} />
-                      Categories saved! Refresh the homepage to see changes.
+                      Categories saved to database! All devices will now see the updated categories.
+                    </motion.div>
+                  )}
+                  {saveError && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0 }}
+                      className="p-3 bg-red-50 border border-red-200 rounded text-red-600 text-sm flex items-center gap-2"
+                    >
+                      <AlertCircle size={14} />
+                      Failed to save: {saveError}
                     </motion.div>
                   )}
                 </AnimatePresence>

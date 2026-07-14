@@ -90,17 +90,20 @@ export default function Home() {
     fetchProducts();
   }, []);
 
-  // Load admin-configured featured categories from localStorage
+  // Load featured categories from DB (consistent across all devices)
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('featured_categories');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setFeaturedCategories(parsed);
+    async function loadCategories() {
+      try {
+        const res = await fetch('/api/featured-categories');
+        const data = await res.json();
+        if (Array.isArray(data.categories) && data.categories.length > 0) {
+          setFeaturedCategories(data.categories);
         }
+      } catch {
+        // silently keep DEFAULT_CATEGORIES
       }
-    } catch {}
+    }
+    loadCategories();
   }, []);
   const faqItems = [
     { question: 'What is your return policy?', answer: 'We offer a 30-day return policy for all items. Products must be in original condition with tags attached.' },
