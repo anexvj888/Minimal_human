@@ -498,9 +498,9 @@ export default function Home() {
       </section>
 
       {/* ─── FAQ ─── */}
-      <section className="py-16 md:py-24 bg-white">
+      <section className="py-2 md:py-1 bg-white">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal variant="fade-up" className="text-center mb-10 md:mb-12">
+          <ScrollReveal variant="fade-up" className="text-center mb-4 md:mb-6">
             <h2 className="text-4xl md:text-5xl font-bold text-black">Frequently Asked Questions</h2>
           </ScrollReveal>
           <div className="space-y-3 md:space-y-4">
