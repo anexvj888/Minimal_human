@@ -266,14 +266,26 @@ export default function Home() {
           </ScrollReveal>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-8">
-            {['Men', 'Women', 'New Arrivals'].map((category, i) => (
-              <ScrollReveal key={category} variant="zoom-in" delay={i * 0.12}>
-                <Link href={`/catalog?category=${category}`}>
+            {[
+              { name: 'Men', image: '/mens.webp', objectClass: 'object-cover object-top' },
+              { name: 'Women', image: '/womens.webp', objectClass: 'object-cover object-top' },
+              { name: 'New Arrivals', image: '/new arrival.webp', objectClass: 'object-contain p-4' }
+            ].map((category, i) => (
+              <ScrollReveal key={category.name} variant="zoom-in" delay={i * 0.12}>
+                <Link href={`/catalog?category=${category.name}`}>
                   <motion.div
-                    className="relative h-52 sm:h-72 md:h-96 bg-white overflow-hidden cursor-pointer shadow-xl card-shine"
+                    className="relative h-52 sm:h-72 md:h-96 bg-white overflow-hidden cursor-pointer shadow-xl card-shine group"
                     whileHover={{ scale: 1.03, boxShadow: '0 30px 60px rgba(0,0,0,0.25)' }}
                     transition={{ type: 'spring', stiffness: 300, damping: 22 }}
                   >
+                    <Image
+                      src={category.image}
+                      alt={category.name}
+                      fill
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 33vw"
+                      className={`transition-transform duration-700 group-hover:scale-110 ${category.objectClass}`}
+                      priority={i < 3}
+                    />
                     <div className="absolute inset-0 bg-gradient-to-br from-black/50 to-black/70 hover:from-black/60 hover:to-black/80 transition-all duration-500 flex items-center justify-center">
                       <div className="text-center">
                         <motion.h3
@@ -282,7 +294,7 @@ export default function Home() {
                           whileHover={{ y: 0, opacity: 1 }}
                           transition={{ duration: 0.3 }}
                         >
-                          {category}
+                          {category.name}
                         </motion.h3>
                         <motion.p
                           className="text-white/90 font-bold text-sm tracking-wide uppercase"
@@ -353,11 +365,18 @@ export default function Home() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
             <ScrollReveal variant="fade-right">
               <motion.div
-                className="bg-gray-200 h-56 md:h-full rounded-lg overflow-hidden relative"
+                className="bg-gray-50 h-96 md:h-[450px] rounded-lg overflow-hidden relative flex items-center justify-center border border-gray-100 shadow-sm"
                 whileHover={{ scale: 1.02 }}
                 transition={{ type: 'spring', stiffness: 200, damping: 20 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-tr from-red-600/10 to-transparent pointer-events-none" />
+                <Image
+                  src="/logo.png"
+                  alt="Minimal Human Logo"
+                  fill
+                  className="object-contain p-12 md:p-16"
+                  priority
+                />
+                <div className="absolute inset-0 bg-gradient-to-tr from-red-600/5 to-transparent pointer-events-none" />
               </motion.div>
             </ScrollReveal>
             <ScrollReveal variant="fade-left" delay={0.1}>

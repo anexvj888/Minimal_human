@@ -13,7 +13,7 @@ export default function SettingsPage() {
     storeName: 'Minimal Human',
     storeEmail: 'minimalhumanbeing0@gmail.com',
     storePhone: '+91 9037 498360',
-    storeLocation: 'New Delhi, India',
+    storeLocation: 'Kerala, India',
     currencySymbol: '$',
     taxRate: 0,
   });

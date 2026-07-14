@@ -53,7 +53,7 @@ async function verifyTokenEdge(token) {
   }
 }
 
-export async function middleware(request) {
+export async function proxy(request) {
   const token = request.cookies.get('auth-token')?.value;
   const pathname = request.nextUrl.pathname;
 
@@ -75,4 +75,3 @@ export async function middleware(request) {
 export const config = {
   matcher: ['/admin/:path*', '/api/admin/:path*'],
 };
-

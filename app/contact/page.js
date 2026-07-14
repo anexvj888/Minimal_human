@@ -241,7 +241,7 @@ export default function Contact() {
                   <p className="text-gray-600">
                     Minimal Human Headquarters
                     <br />
-                    New Delhi, India
+                    Kerala, India
                   </p>
                 </div>
               </motion.div>
