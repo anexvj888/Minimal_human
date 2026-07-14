@@ -169,7 +169,7 @@ export default function ProductsPage() {
                               {product.name}
                             </td>
                             <td className="py-4 px-4 text-sm text-black">
-                              ${product.price.toFixed(2)}
+                              Rs{product.price.toFixed(2)}
                             </td>
                             <td className="py-4 px-4 text-sm text-black">
                               <span

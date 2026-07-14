@@ -27,7 +27,7 @@ const User = mongoose.models.User || mongoose.model('User', userSchema);
 async function seedAdmin() {
   try {
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(MONGODB_URI);
+    await mongoose.connect(MONGODB_URI, { family: 4 });
     console.log('Connected to MongoDB.');
 
     const adminUsername = 'admin';

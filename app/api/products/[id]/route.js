@@ -109,6 +109,14 @@ export async function PUT(request, { params }) {
     );
   } catch (error) {
     console.error('Update product error:', error);
+    if (error.code === 11000) {
+      const field = Object.keys(error.keyPattern || {})[0] || 'field';
+      const value = error.keyValue ? error.keyValue[field] : '';
+      return NextResponse.json(
+        { error: `A product with this ${field} "${value}" already exists. Please enter a unique ${field}.` },
+        { status: 400 }
+      );
+    }
     return NextResponse.json(
       { error: 'Failed to update product' },
       { status: 500 }
