@@ -2,7 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { Star, ShoppingCart } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function ProductCard({ product }) {
@@ -75,10 +75,6 @@ export default function ProductCard({ product }) {
               View
             </button>
           </Link>
-          <button className="p-1.5 md:p-2 border border-black hover:bg-black hover:text-white transition-colors duration-200 rounded">
-            <ShoppingCart size={15} className="md:hidden" />
-            <ShoppingCart size={18} className="hidden md:block" />
-          </button>
         </div>
       </div>
     </motion.div>

@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Plus, Minus, Star, Zap, Shield, Truck } from 'lucide-react';
+import { ChevronRight, Plus, Minus, Star, Zap, Shield, Truck, MessageCircle, X, User, MapPin, Phone, Mail, Hash } from 'lucide-react';
 import Navbar from '@/components/layouts/navbar';
 import Footer from '@/components/layouts/footer';
 import ProductCard from '@/components/sections/product-card';
@@ -58,6 +58,17 @@ export default function Home() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [openFAQ, setOpenFAQ] = useState(null);
+  const [showCatModal, setShowCatModal] = useState(false);
+  const [activeCat, setActiveCat] = useState(null);
+  const [catCustomer, setCatCustomer] = useState({ name: '', address: '', pin: '', phone: '', email: '' });
+  const [catErrors, setCatErrors] = useState({});
+  const [catImgUrls, setCatImgUrls] = useState(null); // kept for compat but unused
+  const DEFAULT_CATEGORIES = [
+    { id: 'men',          name: 'Men',          image: '/mens.webp' },
+    { id: 'women',        name: 'Women',        image: '/womens.webp' },
+    { id: 'new_arrivals', name: 'New Arrivals', image: '/new arrival.webp' },
+  ];
+  const [featuredCategories, setFeaturedCategories] = useState(DEFAULT_CATEGORIES);
   const heroRef = useRef(null);
 
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
@@ -79,6 +90,18 @@ export default function Home() {
     fetchProducts();
   }, []);
 
+  // Load admin-configured featured categories from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('featured_categories');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setFeaturedCategories(parsed);
+        }
+      }
+    } catch {}
+  }, []);
   const faqItems = [
     { question: 'What is your return policy?', answer: 'We offer a 30-day return policy for all items. Products must be in original condition with tags attached.' },
     { question: 'How long is shipping?', answer: 'Standard shipping takes 5-7 business days. Express shipping available for 2-3 business days.' },
@@ -110,13 +133,57 @@ export default function Home() {
     { x: '50%', y: '10%', size: 6, delay: 1.8, color: 'rgba(185,28,28,0.18)' },
   ];
 
+  const handleCatCustomerChange = (e) => {
+    setCatCustomer((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    setCatErrors((prev) => ({ ...prev, [e.target.name]: '' }));
+  };
+
+  const openCatWhatsApp = (category) => {
+    setActiveCat(category);
+    setCatCustomer({ name: '', address: '', pin: '', phone: '', email: '' });
+    setCatErrors({});
+    setShowCatModal(true);
+  };
+
+  const validateAndSendCatWhatsApp = () => {
+    const errors = {};
+    if (!catCustomer.name.trim()) errors.name = 'Name is required';
+    if (!catCustomer.address.trim()) errors.address = 'Address is required';
+    if (!catCustomer.pin.trim()) errors.pin = 'PIN code is required';
+    if (!catCustomer.phone.trim()) errors.phone = 'Phone number is required';
+    else if (!/^[0-9]{10}$/.test(catCustomer.phone.trim())) errors.phone = 'Enter a valid 10-digit number';
+    if (catCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(catCustomer.email.trim())) errors.email = 'Enter a valid email';
+    if (Object.keys(errors).length > 0) { setCatErrors(errors); return; }
+
+    const waPhone = '919037498360';
+    const msg = [
+      `🛍️ *Order Enquiry — Minimal Human*`,
+      ``,
+      `👤 *Customer Details*`,
+      `*Name:* ${catCustomer.name}`,
+      `*Address:* ${catCustomer.address}`,
+      `*PIN Code:* ${catCustomer.pin}`,
+      `*Phone:* ${catCustomer.phone}`,
+      catCustomer.email ? `*Email:* ${catCustomer.email}` : null,
+      ``,
+      `📦 *Product Details*`,
+      `*Category:* ${activeCat?.name}`,
+      `*Product No:* ${activeCat?.number}`,
+      ``,
+      `Please help me with this product. Thank you! 🙏`,
+    ].filter(Boolean).join('\n');
+
+    window.open(`https://wa.me/${waPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    setShowCatModal(false);
+  };
+
   return (
     <>
       <ScrollProgressBar />
       <Navbar />
 
       {/* ─── HERO ─── */}
-      <section ref={heroRef} className="relative pt-28 pb-14 md:pt-40 md:pb-32 bg-white overflow-hidden min-h-[90vh] flex items-center">
+      <section ref={heroRef} className="relative pt-1 pb-1 md:pt-4 md:pb-3 bg-white overflow-hidden min-h-[30vh] flex items-center">
         {/* Animated background blobs */}
         <motion.div
           className="absolute w-[600px] h-[600px] bg-red-600 rounded-full blur-[120px] opacity-[0.04] -top-60 -right-60 pointer-events-none"
@@ -189,9 +256,9 @@ export default function Home() {
             Premium essential wear designed with purpose. Every piece crafted for timeless style, supreme comfort, and uncompromising quality.
           </motion.p>
 
-          {/* CTA Buttons */}
+          {/* CTA Buttons — hidden on mobile, visible on sm+ */}
           <motion.div
-            className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center mb-12"
+            className="hidden sm:flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.8, duration: 0.6 }}
@@ -223,8 +290,8 @@ export default function Home() {
         </motion.div>
       </section>
 
-      {/* ─── TICKER MARQUEE ─── */}
-      <div className="bg-black border-y-2 border-red-600 py-3 overflow-hidden">
+      {/* ─── TICKER MARQUEE — hidden on mobile ─── */}
+      <div className="hidden sm:block bg-black border-y-2 border-red-600 py-3 overflow-hidden">
         <div className="ticker-wrap">
           <div className="ticker-inner animate-ticker select-none">
             {[...tickerItems, ...tickerItems].map((item, i) => (
@@ -237,8 +304,8 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ─── STATS SECTION ─── */}
-      <section className="py-12 md:py-20 bg-white border-b border-gray-100">
+      {/* ─── STATS SECTION — hidden on mobile ─── */}
+      <section className="hidden md:block py-12 md:py-20 bg-white border-b border-gray-100">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8">
             {stats.map((s, i) => (
@@ -265,59 +332,63 @@ export default function Home() {
             <p className="text-white/90 text-lg font-semibold tracking-wide">Curated essentials for every lifestyle</p>
           </ScrollReveal>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 md:gap-8">
-            {[
-              { name: 'Men', image: '/mens.webp', objectClass: 'object-cover object-top' },
-              { name: 'Women', image: '/womens.webp', objectClass: 'object-cover object-top' },
-              { name: 'New Arrivals', image: '/new arrival.webp', objectClass: 'object-contain p-4' }
-            ].map((category, i) => (
-              <ScrollReveal key={category.name} variant="zoom-in" delay={i * 0.12}>
-                <Link href={`/catalog?category=${category.name}`}>
-                  <motion.div
-                    className="relative h-52 sm:h-72 md:h-96 bg-white overflow-hidden cursor-pointer shadow-xl card-shine group"
-                    whileHover={{ scale: 1.03, boxShadow: '0 30px 60px rgba(0,0,0,0.25)' }}
-                    transition={{ type: 'spring', stiffness: 300, damping: 22 }}
-                  >
-                    <Image
-                      src={category.image}
-                      alt={category.name}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 33vw, 33vw"
-                      className={`transition-transform duration-700 group-hover:scale-110 ${category.objectClass}`}
-                      priority={i < 3}
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-br from-black/50 to-black/70 hover:from-black/60 hover:to-black/80 transition-all duration-500 flex items-center justify-center">
-                      <div className="text-center">
-                        <motion.h3
-                          className="text-3xl md:text-4xl font-black text-white mb-3"
-                          initial={{ y: 10, opacity: 0.8 }}
-                          whileHover={{ y: 0, opacity: 1 }}
-                          transition={{ duration: 0.3 }}
-                        >
-                          {category.name}
-                        </motion.h3>
-                        <motion.p
-                          className="text-white/90 font-bold text-sm tracking-wide uppercase"
-                          initial={{ opacity: 0, y: 6 }}
-                          whileHover={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: 0.05 }}
-                        >
-                          → Explore →
-                        </motion.p>
-                      </div>
-                    </div>
-                  </motion.div>
-                </Link>
-              </ScrollReveal>
-            ))}
+          {/* Dynamic grid — 2 cols mobile, up to 3 cols desktop */}
+          <div className={`grid gap-3 sm:gap-5 md:gap-8 ${
+            featuredCategories.length === 1
+              ? 'grid-cols-1'
+              : 'grid-cols-2 sm:grid-cols-3'
+          }`}>
+            {featuredCategories.map((category, i) => {
+              // Last item spans full width on mobile when total count is odd & >1
+              const isLastOdd = featuredCategories.length > 1 && featuredCategories.length % 2 !== 0 && i === featuredCategories.length - 1;
+              return (
+                <ScrollReveal
+                  key={category.id}
+                  variant="zoom-in"
+                  delay={i * 0.12}
+                  className={isLastOdd ? 'col-span-2 sm:col-span-1' : ''}
+                >
+                  <div className="relative group">
+                    <Link href={`/catalog?category=${category.name}`}>
+                      <motion.div
+                        className="relative h-64 sm:h-72 md:h-96 bg-white overflow-hidden cursor-pointer shadow-xl card-shine"
+                        whileHover={{ scale: 1.03, boxShadow: '0 30px 60px rgba(0,0,0,0.25)' }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 22 }}
+                      >
+                        <Image
+                          src={category.image}
+                          alt={category.name}
+                          fill
+                          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 33vw"
+                          className="object-cover object-top transition-transform duration-700 group-hover:scale-110"
+                          priority={i < 3}
+                          unoptimized={category.image?.startsWith('http')}
+                        />
+                      </motion.div>
+                    </Link>
+
+                    {/* WhatsApp button — mobile only */}
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); openCatWhatsApp({ ...category, number: i + 1 }); }}
+                      className="sm:hidden absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold text-white text-xs tracking-wide bg-[#25D366] hover:bg-[#1ebe5d] shadow-lg active:scale-95 transition-all z-10 whitespace-nowrap"
+                    >
+                      <MessageCircle size={13} strokeWidth={2.5} />
+                      Order via WhatsApp
+                    </button>
+                  </div>
+                </ScrollReveal>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* ─── RECOMMENDED PRODUCTS ─── */}
-      <section className="py-16 md:py-28 bg-white">
+      <section className="py-16 md:py-28 bg-white" id="premium-selection">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <ScrollReveal variant="fade-up" className="text-center mb-12 md:mb-16">
+          {/* Premium Selection heading — hidden on mobile */}
+          <ScrollReveal variant="fade-up" className="hidden md:block text-center mb-12 md:mb-16">
             <div className="mb-4 flex items-center justify-center gap-4">
               <span className="inline-block h-1 w-12 md:w-16 bg-red-600" />
               <span className="text-red-600 font-black text-xs md:text-sm tracking-widest uppercase">Premium Selection</span>
@@ -329,6 +400,7 @@ export default function Home() {
             <p className="text-gray-700 text-lg font-semibold">Discover our most coveted pieces</p>
           </ScrollReveal>
 
+          <div className="hidden md:block">
           {loading ? (
             <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
               {[...Array(6)].map((_, i) => (
@@ -356,11 +428,12 @@ export default function Home() {
               </ScrollReveal>
             </>
           )}
+          </div>
         </div>
       </section>
 
-      {/* ─── BRAND STORY ─── */}
-      <section className="py-16 md:py-24 bg-white">
+      {/* ─── BRAND STORY — hidden on mobile ─── */}
+      <section className="hidden md:block py-16 md:py-24 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-12 items-center">
             <ScrollReveal variant="fade-right">
@@ -395,8 +468,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── WHY CHOOSE US ─── */}
-      <section className="py-16 md:py-24 bg-gray-50">
+      {/* ─── WHY CHOOSE US — hidden on mobile ─── */}
+      <section className="hidden md:block py-16 md:py-24 bg-gray-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <ScrollReveal variant="fade-up" className="text-center mb-10 md:mb-12">
             <h2 className="text-4xl md:text-5xl font-bold text-black">Why Choose Us</h2>
@@ -504,27 +577,131 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ─── NEWSLETTER ─── */}
-      <section className="py-16 md:py-24 bg-white">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <ScrollReveal variant="fade-up">
-            <h2 className="text-3xl md:text-4xl font-bold text-black mb-4">Stay Updated</h2>
-            <p className="text-gray-600 text-lg mb-8">Subscribe to our newsletter for exclusive offers and style tips.</p>
-            <form className="flex flex-col gap-3 sm:flex-row sm:gap-4">
-              <input
-                type="email"
-                placeholder="Enter your email"
-                className="flex-1 px-6 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-600 focus:border-transparent"
-              />
-              <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-                <Button variant="accent" size="lg" className="w-full sm:w-auto">Subscribe</Button>
-              </motion.div>
-            </form>
-          </ScrollReveal>
-        </div>
-      </section>
+      {/* ─── NEWSLETTER removed ─── */}
 
       <Footer />
+
+      {/* ─── CATEGORY WHATSAPP MODAL ─── */}
+      <AnimatePresence>
+        {showCatModal && activeCat && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              className="fixed inset-0 bg-black/60 z-[80] backdrop-blur-sm"
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setShowCatModal(false)}
+            />
+
+            {/* Modal Panel */}
+            <motion.div
+              className="fixed bottom-0 left-0 right-0 md:top-1/2 md:left-1/2 md:bottom-auto md:right-auto md:-translate-x-1/2 md:-translate-y-1/2 z-[90] w-full md:max-w-md bg-white rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden"
+              initial={{ y: '100%', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: '100%', opacity: 0 }}
+              transition={{ type: 'spring', stiffness: 340, damping: 32 }}
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between px-6 pt-6 pb-4 border-b-2 border-red-600">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-[#25D366] rounded-full flex items-center justify-center">
+                    <MessageCircle size={16} className="text-white" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <h2 className="font-black text-base text-black">Order via WhatsApp</h2>
+                    <p className="text-xs text-gray-500">Fill your details to place an order</p>
+                  </div>
+                </div>
+                <button onClick={() => setShowCatModal(false)} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                  <X size={20} />
+                </button>
+              </div>
+
+              {/* Product Summary Badge */}
+              <div className="mx-6 mt-4 p-3 bg-gray-50 rounded-xl border border-gray-200 flex items-center gap-3">
+                <div className="w-10 h-10 bg-red-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-black text-sm">#{activeCat.number}</span>
+                </div>
+                <div>
+                  <p className="font-bold text-sm text-black">{activeCat.name} Collection</p>
+                  <p className="text-xs text-gray-500">Product No: {activeCat.number} · Minimal Human</p>
+                </div>
+              </div>
+
+              {/* Form Fields */}
+              <div className="px-6 pt-4 pb-6 space-y-4 max-h-[55vh] overflow-y-auto">
+                {/* Name */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-black uppercase tracking-wider mb-1.5">
+                    <User size={12} /> Name <span className="text-red-600">*</span>
+                  </label>
+                  <input type="text" name="name" value={catCustomer.name} onChange={handleCatCustomerChange}
+                    placeholder="Your full name"
+                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#25D366] transition ${catErrors.name ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  {catErrors.name && <p className="text-red-500 text-xs mt-1">{catErrors.name}</p>}
+                </div>
+
+                {/* Address */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-black uppercase tracking-wider mb-1.5">
+                    <MapPin size={12} /> Residential Address <span className="text-red-600">*</span>
+                  </label>
+                  <textarea name="address" value={catCustomer.address} onChange={handleCatCustomerChange}
+                    placeholder="House No., Street, City, State" rows={2}
+                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#25D366] transition resize-none ${catErrors.address ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  {catErrors.address && <p className="text-red-500 text-xs mt-1">{catErrors.address}</p>}
+                </div>
+
+                {/* PIN + Phone */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-black uppercase tracking-wider mb-1.5">
+                      <Hash size={12} /> PIN Code <span className="text-red-600">*</span>
+                    </label>
+                    <input type="text" name="pin" value={catCustomer.pin} onChange={handleCatCustomerChange}
+                      placeholder="eg. 682001" maxLength={6}
+                      className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#25D366] transition ${catErrors.pin ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                    />
+                    {catErrors.pin && <p className="text-red-500 text-xs mt-1">{catErrors.pin}</p>}
+                  </div>
+                  <div>
+                    <label className="flex items-center gap-1.5 text-xs font-bold text-black uppercase tracking-wider mb-1.5">
+                      <Phone size={12} /> Phone <span className="text-red-600">*</span>
+                    </label>
+                    <input type="tel" name="phone" value={catCustomer.phone} onChange={handleCatCustomerChange}
+                      placeholder="10-digit number" maxLength={10}
+                      className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#25D366] transition ${catErrors.phone ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                    />
+                    {catErrors.phone && <p className="text-red-500 text-xs mt-1">{catErrors.phone}</p>}
+                  </div>
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="flex items-center gap-1.5 text-xs font-bold text-black uppercase tracking-wider mb-1.5">
+                    <Mail size={12} /> Email <span className="text-gray-400 font-normal normal-case">(optional)</span>
+                  </label>
+                  <input type="email" name="email" value={catCustomer.email} onChange={handleCatCustomerChange}
+                    placeholder="your@email.com"
+                    className={`w-full px-4 py-2.5 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#25D366] transition ${catErrors.email ? 'border-red-500 bg-red-50' : 'border-gray-300'}`}
+                  />
+                  {catErrors.email && <p className="text-red-500 text-xs mt-1">{catErrors.email}</p>}
+                </div>
+
+                {/* Submit */}
+                <button type="button" onClick={validateAndSendCatWhatsApp}
+                  className="w-full flex items-center justify-center gap-2.5 py-3.5 px-6 rounded-xl font-black text-white text-base tracking-wide transition-all duration-200 bg-[#25D366] hover:bg-[#1ebe5d] active:scale-[0.98] shadow-lg mt-2"
+                >
+                  <MessageCircle size={22} strokeWidth={2.5} />
+                  Send Order on WhatsApp
+                </button>
+                <p className="text-center text-xs text-gray-400 -mt-1">WhatsApp will open with your details pre-filled. Just press Send!</p>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </>
   );
 }

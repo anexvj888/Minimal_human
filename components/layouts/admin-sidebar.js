@@ -4,7 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { LayoutDashboard, Package, Settings, X } from 'lucide-react';
+import { LayoutDashboard, Package, Settings, X, LayoutGrid } from 'lucide-react';
 
 export default function AdminSidebar({ isOpen, onClose }) {
   const pathname = usePathname();
@@ -19,6 +19,11 @@ export default function AdminSidebar({ isOpen, onClose }) {
       href: '/admin/products',
       icon: Package,
       label: 'Products',
+    },
+    {
+      href: '/admin/featured-categories',
+      icon: LayoutGrid,
+      label: 'Featured Categories',
     },
     {
       href: '/admin/settings',

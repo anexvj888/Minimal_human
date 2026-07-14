@@ -88,9 +88,6 @@ export default function Navbar() {
               <button className="p-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors">
                 <Search size={20} />
               </button>
-              <button className="p-2 hover:bg-red-50 hover:text-red-600 rounded transition-colors">
-                <ShoppingCart size={20} />
-              </button>
               <Link href="/admin/login">
                 <Button className="bg-red-600 text-white hover:bg-red-700 font-semibold rounded">
                   Admin
@@ -103,11 +100,8 @@ export default function Navbar() {
               )}
             </div>
 
-            {/* Mobile Right — Cart + Drawer Toggle */}
+            {/* Mobile Right — Drawer Toggle only */}
             <div className="flex md:hidden items-center gap-1">
-              <button className="p-2 hover:bg-red-50 rounded transition-colors text-black">
-                <ShoppingCart size={20} />
-              </button>
               <button
                 onClick={() => setDrawerOpen(true)}
                 className="p-2 hover:bg-red-50 rounded transition-colors text-black"

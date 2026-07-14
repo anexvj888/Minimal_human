@@ -28,8 +28,8 @@ export default function Footer() {
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div>
+          {/* Quick Links — hidden on mobile */}
+          <div className="hidden md:block">
             <h4 className="font-black text-sm uppercase tracking-widest mb-6 text-red-600">Quick Links</h4>
             <nav className="flex flex-col space-y-3 text-sm">
               <Link href="/" className="text-gray-700 hover:text-red-600 transition-colors font-semibold">
@@ -66,31 +66,13 @@ export default function Footer() {
               </div>
             </div>
           </div>
-
-          {/* Newsletter */}
-          <div>
-            <h4 className="font-black text-sm uppercase tracking-widest mb-6 text-red-600">Newsletter</h4>
-            <p className="text-gray-700 text-sm mb-4 font-medium">
-              Subscribe for style tips & exclusive offers.
-            </p>
-            <div className="flex gap-2">
-              <input
-                type="email"
-                placeholder="Your email"
-                className="flex-1 px-4 py-3 bg-white text-black placeholder-gray-500 border-2 border-gray-300 focus:border-red-600 text-sm focus:outline-none transition-colors font-medium"
-              />
-              <button className="px-6 py-3 bg-red-600 text-white font-black text-sm hover:bg-red-700 transition-colors uppercase tracking-wide">
-                Subscribe
-              </button>
-            </div>
-          </div>
         </div>
 
         {/* Divider */}
         <div className="border-t-2 border-red-600 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-700 text-sm font-semibold">
-              © 2024 Minimal Human. All rights reserved.
+               2026 Minimal Human. All rights reserved.
             </p>
             <div className="flex gap-8 mt-4 md:mt-0 text-sm text-gray-700 font-semibold">
               <a href="#" className="hover:text-red-600 transition-colors">

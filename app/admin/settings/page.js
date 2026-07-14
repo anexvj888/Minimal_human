@@ -17,7 +17,6 @@ export default function SettingsPage() {
     currencySymbol: '$',
     taxRate: 0,
   });
-
   const [saved, setSaved] = useState(false);
 
   const handleChange = (key, value) => {
@@ -25,7 +24,6 @@ export default function SettingsPage() {
   };
 
   const handleSave = () => {
-    // Simulate saving settings
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -51,12 +49,9 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
       <AdminSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
 
-      {/* Main Content */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
           <div className="px-6 py-4 flex items-center justify-between">
             <button
@@ -70,82 +65,68 @@ export default function SettingsPage() {
           </div>
         </header>
 
-        {/* Content */}
         <main className="flex-1 p-6 md:p-8 overflow-auto">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="max-w-3xl"
+            className="max-w-3xl space-y-8"
           >
-            {/* Success Message */}
             {saved && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mb-6 p-4 bg-green-50 border border-green-200 rounded text-green-600 text-sm"
+                className="p-4 bg-green-50 border border-green-200 rounded text-green-600 text-sm"
               >
                 Settings saved successfully!
               </motion.div>
             )}
 
-            {/* Settings Groups */}
-            <div className="space-y-8">
-              {settingGroups.map((group, groupIndex) => (
-                <motion.div
-                  key={groupIndex}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: groupIndex * 0.1 }}
-                >
-                  <Card>
-                    <CardHeader>
-                      <h2 className="text-xl font-bold text-black">{group.title}</h2>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      {group.settings.map((setting) => (
-                        <div key={setting.key}>
-                          <label className="block text-sm font-medium text-black mb-2">
-                            {setting.label}
-                          </label>
-                          <input
-                            type={setting.type}
-                            value={settings[setting.key]}
-                            onChange={(e) =>
-                              handleChange(
-                                setting.key,
-                                setting.type === 'number'
-                                  ? parseFloat(e.target.value)
-                                  : e.target.value
-                              )
-                            }
-                            className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
-                          />
-                        </div>
-                      ))}
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              ))}
-
-              {/* Save Button */}
+            {settingGroups.map((group, groupIndex) => (
               <motion.div
-                className="flex gap-3"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
+                key={groupIndex}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: groupIndex * 0.1 }}
               >
-                <Button
-                  variant="primary"
-                  size="lg"
-                  onClick={handleSave}
-                  className="flex-1 max-w-xs"
-                >
-                  Save Settings
-                </Button>
+                <Card>
+                  <CardHeader>
+                    <h2 className="text-xl font-bold text-black">{group.title}</h2>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {group.settings.map((setting) => (
+                      <div key={setting.key}>
+                        <label className="block text-sm font-medium text-black mb-2">
+                          {setting.label}
+                        </label>
+                        <input
+                          type={setting.type}
+                          value={settings[setting.key]}
+                          onChange={(e) =>
+                            handleChange(
+                              setting.key,
+                              setting.type === 'number' ? parseFloat(e.target.value) : e.target.value
+                            )
+                          }
+                          className="w-full px-4 py-3 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
               </motion.div>
-            </div>
+            ))}
+
+            <motion.div
+              className="flex gap-3"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <Button variant="primary" size="lg" onClick={handleSave} className="flex-1 max-w-xs">
+                Save Settings
+              </Button>
+            </motion.div>
           </motion.div>
         </main>
       </div>
